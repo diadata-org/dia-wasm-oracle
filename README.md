@@ -1,22 +1,21 @@
-# diadaia-wasm
+# DIA WASM oracle
 
-Diadata Key/Value oracle written using wasm, can be deployed to supported substrate chains.
+This project contains the diadata Key/Value oracle written using wasm, can be deployed to supported substrate chains.
 
 
-### Functions of oracle
+### Functions of the wasm oracle
 
 *get* : Gets the latest value of the asset symbol with timestamp
 
 *set* : Sets latest value of asset, requires price and timestamp. Can be called only by the owner of contract
 
-### setup instructions for cargo contract 
+### setup instructions for cargo contract
 
 https://github.com/paritytech/cargo-contract
 
 ### Deployed Contract
 
-Network: Astar testnet (Shibuya) : 0x4a9c229ed1905dde10b863370b07f11dee983e022319fb297580e2f19b51e6fc
-
+Network: Astar testnet (Shibuya) : [XmVR4FbKWLYQgyHVxkFiBYScVo662WgSCoS84uZZPWNrtRT](https://shibuya.subscan.io/account/XmVR4FbKWLYQgyHVxkFiBYScVo662WgSCoS84uZZPWNrtRT)
 
 ### Running Oracle Service
 
