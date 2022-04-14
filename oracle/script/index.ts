@@ -7,6 +7,8 @@ import { Keyring } from "@polkadot/keyring";
 import { setTimeout } from "timers/promises";
 import fetch from "node-fetch";
 import { timeStamp } from "console";
+const BN = require('bn.js');
+
 
 //init env vars
 const privateKey = process.env.PRIVATE_KEY as string;
@@ -42,9 +44,16 @@ async function updateOracle(symbol: string, price: number, time: number) {
   // const res = await contract.query.get(ADDR, { value: 0, gasLimit: -1 }, "ETH");
   console.log(pair.meta.name, "has address", pair.address);
 
+  const account:any = await api.query.system.account(ADDR);
+  console.log("accountdata",account)
+  let noncestring = account.nonce as string
+  let nonce = new BN(noncestring.toString());
+
+  nonce = nonce.add(new BN(1));
+
   contract.tx
     .set({ value, gasLimit }, symbol, price, time)
-    .signAndSend(pair, (result) => {
+    .signAndSend(pair,{nonce:nonce}, (result) => {
       if (result.isError) {
         console.log("err");
       }
