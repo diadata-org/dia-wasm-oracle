@@ -4,9 +4,9 @@ use ink_lang as ink;
 
 use ink_storage::traits::{PackedLayout, SpreadLayout};
 
-// #[derive(
-//     Copy, PartialEq, Debug, Clone, scale::Encode, scale::Decode, PackedLayout, SpreadLayout,
-// )]
+#[derive(
+    Copy, PartialEq, Debug, Clone, scale::Encode, scale::Decode, PackedLayout, SpreadLayout,
+)]
 #[cfg_attr(
     feature = "std",
     derive(scale_info::TypeInfo, ::ink_storage::traits::StorageLayout)
