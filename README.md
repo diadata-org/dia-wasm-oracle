@@ -15,7 +15,7 @@ https://github.com/paritytech/cargo-contract
 
 ### Deployed Contract
 
-Network: Astar testnet (Shibuya) : [X5NLwAUYX7FwVk25a8JwaXtuVJQsW87GQcKxYoF3aLyu8Pz](https://shibuya.subscan.io/account/YpfUaqH4zMcEo8Kw1egpPrjAGmBDWu1VVTLEEimXr2Kzevb)
+Network: Astar testnet (Shibuya) : [X5NLwAUYX7FwVk25a8JwaXtuVJQsW87GQcKxYoF3aLyu8Pz](https://shibuya.subscan.io/account/X5NLwAUYX7FwVk25a8JwaXtuVJQsW87GQcKxYoF3aLyu8Pz)
 
 ### Running Oracle Service
 
