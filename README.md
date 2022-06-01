@@ -104,7 +104,7 @@ To access value you can simple call diadata oracle function
 This gives ETH value time given by the oracle
 
 
-#### Config chnages
+#### Config changes
 
 Make sure you add diadata/std in you config
 
