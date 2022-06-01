@@ -15,7 +15,7 @@ https://github.com/paritytech/cargo-contract
 
 ### Deployed Contract
 
-Network: Astar testnet (Shibuya) : [YpfUaqH4zMcEo8Kw1egpPrjAGmBDWu1VVTLEEimXr2Kzevb](https://shibuya.subscan.io/account/YpfUaqH4zMcEo8Kw1egpPrjAGmBDWu1VVTLEEimXr2Kzevb)
+Network: Astar testnet (Shibuya) : [X5NLwAUYX7FwVk25a8JwaXtuVJQsW87GQcKxYoF3aLyu8Pz](https://shibuya.subscan.io/account/YpfUaqH4zMcEo8Kw1egpPrjAGmBDWu1VVTLEEimXr2Kzevb)
 
 ### Running Oracle Service
 
@@ -63,34 +63,19 @@ Create storage with DiaDataref, this is used to access values from oracle
 thsi diadata can be used to access pub functions from the oracle contract
 
 
-#### Initialise Diadataref with Diadata oracle
+#### Link Diadataref with Diadata oracle
 
 To access oracle you need to pass diadata orale address, either using constructor or you can create a separate write function to update the value of oracle in later stage
 
-Example Initialising using constructor
+Example using constructor
 
 ````
 
-    #[ink(constructor)]
+        #[ink(constructor)]
         pub fn new(
-            version: u32,
-            oracle_code_hash: Hash,
- 
+            oracle_address: AccountId, 
         ) -> Self {
-            let total_balance = Self::env().balance();
-            let salt = version.to_le_bytes();
-            let diadata = DiadataRef::new()
-                .endowment(total_balance/2)
-                .code_hash(oracle_code_hash)
-                .salt_bytes(salt)
-                .instantiate()
-                .unwrap_or_else(|error| {
-                    panic!(
-                        "failed at instantiating the Oracle contract: {:?}",
-                        error
-                    )
-                });
-          
+            let diadata: DiadataRef = ink_env::call::FromAccountId::from_account_id(oracle_address);  
             Self {
                 diadata
             }
@@ -101,7 +86,7 @@ Example Initialising using constructor
 
 ````
 
-Here oracle_code_hash refers to diadata oracle address
+Here oracle_address refers to diadata oracle address
 
 
 #### Access value
