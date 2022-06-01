@@ -4,6 +4,11 @@ use ink_lang as ink;
 
 use ink_storage::traits::{PackedLayout, SpreadLayout};
 
+pub use crate::diadata::{
+    Diadata,
+    DiadataRef,
+};
+
 #[derive(
     Copy, PartialEq, Debug, Clone, scale::Encode, scale::Decode, PackedLayout, SpreadLayout,
 )]
@@ -23,8 +28,8 @@ impl ValueTime {
 }
 
 #[ink::contract]
-mod diadata {
-    use crate::ValueTime;
+pub mod diadata {
+    pub use crate::ValueTime;
 
     use ink_prelude::string::String;
     use ink_storage::{traits::SpreadAllocate, Mapping};
