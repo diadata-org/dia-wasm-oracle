@@ -18,7 +18,6 @@ mod oracleexample {
     }
 
     impl OracleExample {
-        /// Instantiate a `delegator` contract with the given sub-contract codes.
         #[ink(constructor)]
         pub fn new(
             version: u32,

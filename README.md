@@ -39,3 +39,106 @@ npm run build
 npm run start
 
 ````
+
+### Using Diadata Oracle in your contracts
+
+To access value from diadata wasm oracles you need to copy diadata directory to your contract so that you can access diadata structs from it
+
+
+#### Changes in your contract
+
+Create storage with DiaDataref, this is used to access values from oracle
+
+````
+
+    #[ink(storage)]
+    pub struct OracleExample {
+        diadata: DiadataRef,
+        ....
+        ....
+    }
+
+````
+
+thsi diadata can be used to access pub functions from the oracle contract
+
+
+#### Initialise Diadataref with Diadata oracle
+
+To access oracle you need to pass diadata orale address, either using constructor or you can create a separate write function to update the value of oracle in later stage
+
+Example Initialising using constructor
+
+````
+
+    #[ink(constructor)]
+        pub fn new(
+            version: u32,
+            oracle_code_hash: Hash,
+ 
+        ) -> Self {
+            let total_balance = Self::env().balance();
+            let salt = version.to_le_bytes();
+            let diadata = DiadataRef::new()
+                .endowment(total_balance/2)
+                .code_hash(oracle_code_hash)
+                .salt_bytes(salt)
+                .instantiate()
+                .unwrap_or_else(|error| {
+                    panic!(
+                        "failed at instantiating the Oracle contract: {:?}",
+                        error
+                    )
+                });
+          
+            Self {
+                diadata
+            }
+        }
+
+
+
+
+````
+
+Here oracle_code_hash refers to diadata oracle address
+
+
+#### Access value
+
+To access value you can simple call diadata oracle function 
+
+
+````
+ pub fn get(&self ) -> diadata::ValueTime {
+            return self.diadata.get(String::from("ETH"));
+        }
+
+````
+
+This gives ETH value time given by the oracle
+
+
+#### Config chnages
+
+Make sure you add diadata/std in you config
+
+````
+
+std = [
+    "ink_metadata/std",
+    "ink_env/std",
+    "ink_storage/std",
+    "ink_primitives/std",
+    "scale/std",
+    "scale-info/std",
+    "diadata/std",
+
+]
+
+````
+
+Make sure Version of ink should be v3.0.1
+
+
+ 
