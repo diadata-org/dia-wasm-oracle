@@ -1,71 +1,44 @@
-# DIA WASM oracle
+# DIA WASM Oracle
 
-This project contains the diadata Key/Value oracle written using wasm, can be deployed to supported substrate chains.
+This project contains the diadata Key/Value oracle written using wasm (web-assembly), which can be deployed to supported substrate chains.
+A demo instance is currently deployed on Shibuya testnet.
 
+## Functions of the wasm oracle
 
-### Functions of the wasm oracle
+*get* : Gets the latest value of the asset symbol with timestamp. Can be called by anyone.
 
-*get* : Gets the latest value of the asset symbol with timestamp
+*set* : Sets latest value of asset, requires price and timestamp. Can be called only by the owner of contract.
 
-*set* : Sets latest value of asset, requires price and timestamp. Can be called only by the owner of contract
+## Deployed Contracts
 
-### setup instructions for cargo contract
+A demo instance of this contract is currently deployed to Astar Shibuya Testnet:
 
-https://github.com/paritytech/cargo-contract
+| Network Name            | Contract address |
+| ----------------------- | ---------------- |
+| Astar testnet (Shibuya) | [X5NLwAUYX7FwVk25a8JwaXtuVJQsW87GQcKxYoF3aLyu8Pz](https://shibuya.subscan.io/account/X5NLwAUYX7FwVk25a8JwaXtuVJQsW87GQcKxYoF3aLyu8Pz) |
 
-### Deployed Contract
+## Using a DIA Oracle in your contracts
 
-Network: Astar testnet (Shibuya) : [X5NLwAUYX7FwVk25a8JwaXtuVJQsW87GQcKxYoF3aLyu8Pz](https://shibuya.subscan.io/account/X5NLwAUYX7FwVk25a8JwaXtuVJQsW87GQcKxYoF3aLyu8Pz)
+To access values from DIA wasm oracles you need to copy the `diadata` directory to your contract so that you can access DIA structs, that contain the oracle data.
 
-### Running Oracle Service
-
-Set required environment variables
-
-````
-PRIVATE_KEY=
-UNLOCK_PASSWORD=
-CONTRACT_ADDRESS=
-RPC_ADDRESS=
-SYMBOLS=
-
-````
-
-after setting up environmnet variables run these command to start service
-
-
-````
-cd oracle
-npm run build
-npm run start
-
-````
-
-### Using Diadata Oracle in your contracts
-
-To access value from diadata wasm oracles you need to copy diadata directory to your contract so that you can access diadata structs from it
-
-
-#### Changes in your contract
+### Changes in your contract
 
 Create storage with DiaDataref, this is used to access values from oracle
 
 ````
-
     #[ink(storage)]
     pub struct OracleExample {
         diadata: DiadataRef,
         ....
         ....
     }
-
 ````
 
-thsi diadata can be used to access pub functions from the oracle contract
+This struct can be used to access data from pub functions from the oracle contract.
 
+### Link DiadataRef with deployed DIA oracle
 
-#### Link Diadataref with Diadata oracle
-
-To access oracle you need to pass diadata orale address, either using constructor or you can create a separate write function to update the value of oracle in later stage
+To instantiate a contract's access to the oracle you need to pass the DIA oracle address, either using the constructor or by creating a separate write function to update with the value of oracle at a later stage.
 
 Example using constructor
 
@@ -81,18 +54,14 @@ Example using constructor
             }
         }
 
-
-
-
 ````
 
-Here oracle_address refers to diadata oracle address
+Here,`oracle_address` refers to the DIA oracle address of a [deployed oracle contract](#deployed-contracts).
 
 
-#### Access value
+### Access Value
 
-To access value you can simple call diadata oracle function 
-
+Next, to access an oracle value you can simple call the `get()` function
 
 ````
  pub fn get(&self ) -> diadata::ValueTime {
@@ -101,10 +70,10 @@ To access value you can simple call diadata oracle function
 
 ````
 
-This gives ETH value time given by the oracle
+This gives the ETH price value time given by the oracle.
 
 
-#### Config changes
+### Config changes
 
 Make sure you add diadata/std in you config
 
@@ -126,4 +95,33 @@ std = [
 Make sure Version of ink should be v3.0.1
 
 
- 
+
+## Running the Oracle Service
+
+You can also run a copy of the oracle service yourself on any supported wasm chain.
+
+### Setup Instructions for Cargo Contract
+
+To develop smart contracts in wasm with ink, run the setup of cargo-contract first:
+
+https://github.com/paritytech/cargo-contract
+
+### 
+
+Set the required environment variables for the oracle feeder:
+
+````
+PRIVATE_KEY=<private key of the updater address in json format>
+UNLOCK_PASSWORD=<optional password for the private key>
+CONTRACT_ADDRESS=<address of deployed wasm contract>
+RPC_ADDRESS=<HTTP address of the node to connect to>
+SYMBOLS=<comma separated values of asset symbols to update>
+````
+
+After setting up these environmnet variables you can run the following commands to start the feeder service:
+
+````
+cd oracle
+npm run build
+npm run start
+````
