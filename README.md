@@ -16,6 +16,8 @@ A demo instance of this contract is currently deployed to Astar Shibuya Testnet:
 | Network Name            | Contract address |
 | ----------------------- | ---------------- |
 | Astar testnet (Shibuya) | [X5NLwAUYX7FwVk25a8JwaXtuVJQsW87GQcKxYoF3aLyu8Pz](https://shibuya.subscan.io/account/X5NLwAUYX7FwVk25a8JwaXtuVJQsW87GQcKxYoF3aLyu8Pz) |
+| Astar  (Shiden) | [Xen1nSvxorHMNx2a9YDDGMw6LXVr7Bn4u9as3917Lv5MZLn](https://shiden.subscan.io/account/) |
+
 
 ## Using a DIA Oracle in Your Contracts
 
