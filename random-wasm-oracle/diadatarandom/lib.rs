@@ -1,54 +1,58 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use ink::{
-     prelude::string::String
-};
- 
+use ink::prelude::vec::Vec;
+
 #[derive(PartialEq, Debug, Clone, scale::Encode, scale::Decode)]
 #[cfg_attr(
     feature = "std",
-    derive(scale_info::TypeInfo,::ink::storage::traits::StorageLayout)
+    derive(scale_info::TypeInfo, ::ink::storage::traits::StorageLayout)
 )]
 
-pub struct Randomdata {
-    randomness: String,
-    signature: String,
-    previous_signature: String,
+pub struct RandomData {
+    randomness: Vec<u8>,
+    signature: Vec<u8>,
+    previous_signature: Vec<u8>,
 }
 
 #[ink::contract]
-pub mod randomoracle {
-    pub use crate::Randomdata;
+pub mod random_oracle {
+    use super::*;
+    pub use crate::RandomData;
     use ink::storage::Mapping;
-    use ink::prelude::string::String;
-
 
     #[ink(storage)]
-    #[derive(Default)]
 
     pub struct RandomOracle {
-        value: Mapping<String, Randomdata>,
+        value: Mapping<Vec<u8>, RandomData>,
+        owner: AccountId,
+        last_round: Vec<u8>,
+
     }
 
     impl RandomOracle {
         #[ink(constructor)]
         pub fn new() -> Self {
-            Default::default()
+            Self {
+                value: Mapping::default(),
+                owner: Self::env().caller(),
+                last_round: Vec::default(),
+            }
         }
 
-   
         #[ink(message)]
         pub fn set_random_value(
             &mut self,
-            round: String,
-            randomness: String,
-            signature: String,
-            previous_signature: String,
+            round: Vec<u8>,
+            randomness: Vec<u8>,
+            signature: Vec<u8>,
+            previous_signature: Vec<u8>,
         ) {
-            // set access
+            let caller = Self::env().caller();
+            assert_eq!(caller, self.owner);
+            self.last_round = round.clone();
             self.value.insert(
                 round,
-                &Randomdata {
+                &RandomData {
                     randomness: randomness,
                     signature: signature,
                     previous_signature: previous_signature,
@@ -57,19 +61,43 @@ pub mod randomoracle {
         }
 
         #[ink(message)]
-        pub fn get_random_value_for_round(
-            &self,
-            round: String,
-        ) -> String {
-            return self.value.get(round).unwrap().randomness  
+        pub fn get_random_value_for_round(&self, round: Vec<u8>) -> Vec<u8> {
+            return self.value.get(round).unwrap().randomness.clone();
         }
 
         #[ink(message)]
-        pub fn get_round(
-            &self,
-            round: String,
-        ) -> Randomdata {
-            return self.value.get(round).unwrap()  
+        pub fn get_round(&self, round: Vec<u8>) -> Option<RandomData> {
+            if let Some(random_data) = self.value.get(round) {
+                Some(random_data.clone())
+            } else {
+                None
+            }
+        }
+
+
+        #[ink(message)]
+        pub fn get_last_round(&self) -> Vec<u8> {
+            return self.last_round.clone();
+        }
+    }
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+
+        #[ink::test]
+        fn test_all() {
+            let mut contract = RandomOracle::new();
+            let round_invalid = vec![1u8, 1, 3];
+
+            let round = vec![1u8, 2, 3];
+            let randomness = vec![4u8, 5, 6];
+            let signature = vec![7u8, 8, 9];
+            let previous_signature = vec![10u8, 11, 12];
+            contract.set_random_value(round.clone(), randomness.clone(), signature.clone(), previous_signature.clone());
+
+            assert_eq!(contract.get_random_value_for_round(round.clone()), randomness);
+            contract.get_round(round_invalid.clone());
+            assert_eq!(contract.get_last_round(), round);
         }
     }
 }

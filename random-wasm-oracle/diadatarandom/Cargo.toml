@@ -1,9 +1,9 @@
 [package]
 name = "randomoracle"
 version = "4.0.1"
-authors = ["Parity Technologies <admin@parity.io>"]
+authors = ["DiaData <nitin.gurbani@diadata.org>"]
 edition = "2021"
-publish = false
+publish = true
 
 [dependencies]
 ink = { version = "4.0", default-features = false }
