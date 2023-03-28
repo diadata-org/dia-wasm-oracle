@@ -2,6 +2,21 @@
 
 use ink::prelude::vec::Vec;
 
+pub use crate::randomoracle::{
+    RandomOracle,
+    RandomOracleRef,
+};
+
+#[ink::trait_definition]
+pub trait IRandomOracle {
+
+    #[ink(message)]
+    fn get_random_value_for_round(&self, round: Vec<u8>) -> Vec<u8>;
+ 
+    #[ink(message)]
+     fn get_last_round(&self) -> Vec<u8>;
+}
+
 #[derive(PartialEq, Debug, Clone, scale::Encode, scale::Decode)]
 #[cfg_attr(
     feature = "std",
@@ -15,9 +30,10 @@ pub struct RandomData {
 }
 
 #[ink::contract]
-pub mod random_oracle {
+pub mod randomoracle {
     use super::*;
     pub use crate::RandomData;
+
     use ink::storage::Mapping;
 
     #[ink(storage)]
@@ -61,11 +77,6 @@ pub mod random_oracle {
         }
 
         #[ink(message)]
-        pub fn get_random_value_for_round(&self, round: Vec<u8>) -> Vec<u8> {
-            return self.value.get(round).unwrap().randomness.clone();
-        }
-
-        #[ink(message)]
         pub fn get_round(&self, round: Vec<u8>) -> Option<RandomData> {
             if let Some(random_data) = self.value.get(round) {
                 Some(random_data.clone())
@@ -73,10 +84,18 @@ pub mod random_oracle {
                 None
             }
         }
+    }
+
+    impl IRandomOracle for RandomOracle {
+
+        #[ink(message)]
+          fn get_random_value_for_round(&self, round: Vec<u8>) -> Vec<u8> {
+            return self.value.get(round).unwrap().randomness.clone();
+        }
 
 
         #[ink(message)]
-        pub fn get_last_round(&self) -> Vec<u8> {
+          fn get_last_round(&self) -> Vec<u8> {
             return self.last_round.clone();
         }
     }
