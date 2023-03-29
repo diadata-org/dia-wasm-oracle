@@ -1,214 +1,112 @@
-// Import
 import { ApiPromise, WsProvider } from "@polkadot/api";
 import { ContractPromise } from "@polkadot/api-contract";
-import type {
-  BTreeMap,
-  Compact,
-  Enum,
-  Option,
-  Struct,
-  Vec,
-} from "@polkadot/types-codec";
-
 import { mnemonicGenerate } from "@polkadot/util-crypto";
 import { Keyring } from "@polkadot/keyring";
 import { setTimeout } from "timers/promises";
 import fetch from "node-fetch";
-import { timeStamp } from "console";
-import type { WeightV2 } from "@polkadot/types/interfaces";
+import { WeightV2 } from "@polkadot/types/interfaces";
 import { BN_ONE } from "@polkadot/util";
 
 const BN = require("bn.js");
 
+
 const MAX_CALL_WEIGHT = new BN(5_000_000_000_000).isub(BN_ONE);
 const PROOFSIZE = new BN(1_000_000);
 
-//init env vars
-const privateKey = process.env.PRIVATE_KEY as string;
-const unlockPassword = process.env.UNLOCK_PASSWORD as string;
-const contractAddress = process.env.CONTRACT_ADDRESS as string; //"YpfUaqH4zMcEo8Kw1egpPrjAGmBDWu1VVTLEEimXr2Kzevb";
-const rpc = process.env.RPC_ADDRESS as string; //wss://rpc.shibuya.astar.network";
-const symbols = process.env.SYMBOLS as string;
-const frequencyinmilisecond = process.env.FREQUENCY_MILLISECOND as string;
+const abi = require("../randomoracle.json");
 
-console.log(symbols);
-console.log("frequencyinmilisecond", frequencyinmilisecond);
-console.log("rpc", rpc);
-console.log("contractAddress", contractAddress);
-
-//DRAND API
-const baseUrl = "https://api.drand.sh/public/latest";
-
-let abi = require("../randomoracle.json");
-
-console.log(abi);
-
-let gasLimit: WeightV2;
-
-const proofSize = PROOFSIZE;
-const refTime = MAX_CALL_WEIGHT;
-const storageDepositLimit = null;
-
-const keyring = new Keyring({ type: "sr25519" });
-const pair = keyring.createFromJson(JSON.parse(privateKey));
-pair.unlock(unlockPassword);
-const ADDR = pair.address;
-let api:  ApiPromise
-let contract: ContractPromise;
-let  account: any;
-async function Init(){
-  const wsProvider = new WsProvider(rpc);
-  api = await ApiPromise.create({ provider: wsProvider });
-
-  contract = new ContractPromise(api, abi, contractAddress);
-  console.log(pair.meta.name, "has address", pair.address);
+class RandomOracleUpdater {
+  private privateKey: string;
+  private unlockPassword: string;
+  private contractAddress: string;
+  private rpc: string;
+  private frequencyInMillisecond: string;
+  private pair: any;
+  private api: ApiPromise;
+  private contract!: ContractPromise;
+  private baseUrl = "https://drand.cloudflare.com/public/latest";
 
 
+  constructor() {
+    this.privateKey = process.env.PRIVATE_KEY as string;
+    this.unlockPassword = process.env.UNLOCK_PASSWORD as string;
+    this.contractAddress = process.env.CONTRACT_ADDRESS as string;
+    this.rpc = process.env.RPC_ADDRESS as string;
+    this.frequencyInMillisecond = process.env.FREQUENCY_MILLISECOND as string;
 
+    this.api = new ApiPromise({ provider: new WsProvider(this.rpc) });
+    // this.contract = new ContractPromise(this.api, abi, this.contractAddress);
 
-}
-
-async function updateOracle(
-  round: string,
-  randomness: string,
-  signature: string,
-  previous_signature: string
-) {
-  const keyring = new Keyring({ type: "sr25519" });
-
-  const pair = keyring.createFromJson(JSON.parse(privateKey));
-  pair.unlock(unlockPassword);
-
-  const ADDR = pair.address;
-
-  // init wsprovider
-  const wsProvider = new WsProvider(rpc);
-  const api = await ApiPromise.create({ provider: wsProvider });
-
-  const contract = new ContractPromise(api, abi, contractAddress);
-
-  // const res = await contract.query.get(ADDR, { value: 0, gasLimit: -1 }, "ETH");
-  console.log(pair.meta.name, "has address", pair.address);
-
-  const account: any = await api.query.system.account(ADDR);
-  // console.log("accountdata",account)
-  let noncestring = account.nonce as string;
-
-  // let nonce = new BN(noncestring.toString());
-
-  // nonce = nonce.add(new BN(1));
-
-  // console.log(symbol,price,time);
-
-  // var query = await contract.query.get( "XmVR4FbKWLYQgyHVxkFiBYScVo662WgSCoS84uZZPWNrtRT",{ gasLimit: -1 },["ETH"])
-  // console.log("query",query)
-
-  let nonce = await api.rpc.system.accountNextIndex(ADDR);
-
-  console.log("nonce", nonce);
-  console.log("round", round);
-  console.log("round", round);
-
-  try {
-    const { gasRequired, result, output } = await contract.query.setRandomValue(
-      pair.address,
-      {
-        gasLimit: (await api.registry.createType("WeightV2", {
-          refTime,
-          proofSize,
-        })) as WeightV2,
-        storageDepositLimit,
-      },
-      round,
-      randomness,
-      signature,
-      previous_signature
-    );
-
-    console.log("storageDepositLimit", storageDepositLimit);
-
-    console.log("gasRequired", gasRequired.toHuman());
-
-    gasLimit = api.registry.createType("WeightV2", gasRequired) as WeightV2;
-
-    console.log("gasLimit", gasLimit.toHuman());
-  } catch (e) {
-    console.log("erro gas", e);
+    this.pair = new Keyring({ type: "sr25519" }).createFromJson(JSON.parse(this.privateKey));
+    this.pair.unlock(this.unlockPassword);
   }
 
-  try {
-    let tx = await contract.tx
-      .setRandomValue(
-        { gasLimit: gasLimit, storageDepositLimit },
-        round,
-        randomness,
-        signature,
-        previous_signature
-      )
-      .signAndSend(pair, { nonce: nonce }, (result) => {
-        if (result.isError) {
-          console.log("err", result);
-        } else {
-          console.log("completed", result.isCompleted);
-          console.log("isInBlock", result.isInBlock);
+  async init() {
+    this.api = await ApiPromise.create({ provider: new WsProvider(this.rpc) });
+    this.contract = new ContractPromise(this.api, abi, this.contractAddress);
+  }
+
+  async updateOracle(round: string, randomness: string, signature: string, previous_signature: string) {
+    const ADDR = this.pair.address;
+    const gasLimit = await this.getGasLimit(round, randomness, signature, previous_signature);
+    const nonce = await this.api.rpc.system.accountNextIndex(ADDR);
+
+    try {
+      const tx = await this.contract.tx
+        .setRandomValue({ gasLimit, storageDepositLimit: null }, round, randomness, signature, previous_signature)
+        .signAndSend(this.pair, { nonce }, (result) => {
+          console.log(result.isError ? "err" : "completed", result.toHuman());
+        //   console.log("isInBlock", result.isInBlock);
           console.log("status", result.status.toHuman());
-        }
-      });
+        });
 
-    console.log("tx", tx.toString());
-  } catch (err) {
-    console.log("err", err);
-  }
-}
-async function getRound(
-  round: string
-) {
-
-  try {
-    const { gasRequired, result, output } = await contract.query.getRandomValueForRound(
-      pair.address,
-      {
-        gasLimit: (api.registry.createType("WeightV2", {
-          refTime,
-          proofSize,
-        })) as WeightV2,
-        storageDepositLimit,
-      },
-      round
-     
-    );
-
-    console.log("result", result);
-    console.log("output", output);
-
- 
-  } catch (e) {
-    console.log("erro gas", e);
+      console.log("tx", tx.toString());
+    } catch (err) {
+      console.log("err", err);
+    }
   }
 
-   
-}
+  async getGasLimit(round: string, randomness: string, signature: string, previous_signature: string): Promise<WeightV2> {
+    const refTime = MAX_CALL_WEIGHT;
+    const proofSize = PROOFSIZE;
+    const storageDepositLimit = null;
+    console.log("this.pair.address",this.pair.address)
 
-async function startOracle() {
-  console.log("Starting Oracle Service");
-  await Init()
-  await getRound("2759336")
-  console.log("start");
-
-  setInterval(async () => {
-    let response = await fetch(baseUrl);
-    const body = await response.text();
-    let resp = JSON.parse(body);
-
-    var d = new Date(resp.Time);
-    updateOracle(
-      resp.round,
-      resp.randomness,
-      resp.signature,
-      resp.previous_signature
+    const { gasRequired, result, output } = await this.contract.query.setRandomValue(
+      this.pair.address,
+      { gasLimit: (await this.api.registry.createType("WeightV2", { refTime, proofSize })) as WeightV2, storageDepositLimit: storageDepositLimit },
+      round, randomness, signature, previous_signature
     );
-    await setTimeout(Number(frequencyinmilisecond));
-  }, Number(frequencyinmilisecond));
+
+    return this.api.registry.createType("WeightV2", gasRequired) as WeightV2;
+  }
+  async startOracle() {
+    console.log("Starting Oracle Service");
+    await this.init();
+    // await this.getRound("2759336");
+
+    setInterval(async () => {
+      let response = await fetch(this.baseUrl);
+      const body = await response.text();
+      let resp = JSON.parse(body);
+      console.log(resp)
+
+
+      await this.updateOracle(
+        resp.round,
+        resp.randomness,
+        resp.signature,
+        resp.previous_signature
+      );
+      await setTimeout(Number(this.frequencyInMillisecond));
+    }, Number(this.frequencyInMillisecond));
+  }
 }
 
-startOracle();
+
+
+
+const randomOracleUpdater = new RandomOracleUpdater();
+randomOracleUpdater.startOracle();
+
+

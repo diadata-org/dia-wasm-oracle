@@ -95,7 +95,7 @@ pub fn get_random_value_for_round(&self, round: Vec<u8>) -> Vec<u8> {
 }
 ```
 
-6. Build and deploy your contract, providing the `RandomOracle` contract's address when instantiating your contract.
+6. Build and deploy your contract, providing the `RandomOracle` contract's address `https://shibuya.subscan.io/account/Y9YVxsyH8bza5zyK1AVW4iw1r7twVdoXMoDzWwdwraapvSM` when instantiating your contract.
 
 7. Interact with your contract to call the methods that use the `RandomOracle` contract.
 
