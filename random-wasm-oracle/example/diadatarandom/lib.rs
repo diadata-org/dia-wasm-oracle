@@ -2,6 +2,8 @@
 
 use ink::prelude::vec::Vec;
 
+pub use crate::randomoracle::{RandomOracle, RandomOracleRef};
+
 #[derive(PartialEq, Debug, Clone, scale::Encode, scale::Decode)]
 #[cfg_attr(
     feature = "std",
@@ -15,9 +17,10 @@ pub struct RandomData {
 }
 
 #[ink::contract]
-pub mod random_oracle {
+pub mod randomoracle {
     use super::*;
     pub use crate::RandomData;
+
     use ink::storage::Mapping;
 
     #[ink(storage)]
@@ -26,7 +29,6 @@ pub mod random_oracle {
         value: Mapping<Vec<u8>, RandomData>,
         owner: AccountId,
         last_round: Vec<u8>,
-
     }
 
     impl RandomOracle {
@@ -61,11 +63,6 @@ pub mod random_oracle {
         }
 
         #[ink(message)]
-        pub fn get_random_value_for_round(&self, round: Vec<u8>) -> Vec<u8> {
-            return self.value.get(round).unwrap().randomness.clone();
-        }
-
-        #[ink(message)]
         pub fn get_round(&self, round: Vec<u8>) -> Option<RandomData> {
             if let Some(random_data) = self.value.get(round) {
                 Some(random_data.clone())
@@ -74,6 +71,14 @@ pub mod random_oracle {
             }
         }
 
+        #[ink(message)]
+        pub fn get_random_value_for_round(&self, round: Vec<u8>) -> Option<Vec<u8>> {
+            if let Some(random_data) = self.value.get(round) {
+                Some(random_data.randomness.clone())
+            } else {
+                None
+            }
+        }
 
         #[ink(message)]
         pub fn get_last_round(&self) -> Vec<u8> {
@@ -93,9 +98,17 @@ pub mod random_oracle {
             let randomness = vec![4u8, 5, 6];
             let signature = vec![7u8, 8, 9];
             let previous_signature = vec![10u8, 11, 12];
-            contract.set_random_value(round.clone(), randomness.clone(), signature.clone(), previous_signature.clone());
+            contract.set_random_value(
+                round.clone(),
+                randomness.clone(),
+                signature.clone(),
+                previous_signature.clone(),
+            );
 
-            assert_eq!(contract.get_random_value_for_round(round.clone()), randomness);
+            assert_eq!(
+                contract.get_random_value_for_round(round.clone()),
+                randomness
+            );
             contract.get_round(round_invalid.clone());
             assert_eq!(contract.get_last_round(), round);
         }

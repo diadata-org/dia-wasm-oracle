@@ -1,0 +1,27 @@
+[package]
+name = "example"
+version = "0.1.0"
+authors = ["DiaData <nitin.gurbani@diadata.org>"]
+edition = "2021"
+publish = true
+license = "MIT OR Apache-2.0"
+description = "A Rust package for implementing a random oracle by DiaData."
+
+[dependencies]
+ink = { version = "4.1.0", default-features = false }
+ 
+randomoracle = { path = "./diadatarandom",  default-features = false ,features = ["ink-as-dependency"]}
+ ink_env = { version = "4.1.0", default-features = false }
+
+scale = { package = "parity-scale-codec", version = "3", default-features = false, features = ["derive"] }
+scale-info = { version = "2.3", default-features = false, features = ["derive"], optional = true }
+
+
+[lib]
+path = "lib.rs"
+
+[features]
+default = ["std"]
+std = ["ink/std", "scale/std", "scale-info/std","randomoracle/std"]
+ink-as-dependency = []
+e2e-tests = []
