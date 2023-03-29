@@ -2,41 +2,31 @@
 #![allow(clippy::new_without_default)]
 
 use ink::prelude::vec::Vec;
+use randomoracle::RandomOracleRef;
+use ink_env::call::FromAccountId;
 
 #[ink::contract]
-mod example {
-    use ink::prelude::vec::Vec;
-    use oracletraits::IRandomOracle; // Make sure to import the IRandomOracle trait
+mod my_contract {
+    use super::*;
 
     #[ink(storage)]
-    pub struct Example {
-        value: bool,
-        randomeoracle: ink::contract_ref!(IRandomOracle),
+    pub struct MyContract {
+        random_oracle: RandomOracleRef,
     }
 
-    impl Example {
+    impl MyContract {
         #[ink(constructor)]
-        pub fn new(init_value: bool, randomeoracle: AccountId) -> Self {
+        pub fn new(init_value: bool, random_oracle: AccountId) -> Self {
             Self {
                 value: init_value,
-                randomeoracle: randomeoracle.into(),
+                random_oracle: RandomOracleRef::from_account_id(random_oracle),
             }
         }
 
-        #[ink(message)]
-        pub fn flip(&mut self) {
-            self.value = !self.value;
-        }
 
         #[ink(message)]
-        pub fn get(&self) -> bool {
-            self.value
-        }
-    }
-
-    impl IRandomOracle for Example {
-        fn get_random_value_for_round(&self, round: Vec<u8>) -> Vec<u8> {
-            self.randomeoracle.get_random_value_for_round(round)
+        pub fn get_random_value_for_round(&self, round: Vec<u8>) -> Option<Vec<u8>> {
+            self.random_oracle.get_random_value_for_round(round)
         }
     }
 }
