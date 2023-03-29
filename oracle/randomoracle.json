@@ -1,12 +1,12 @@
 {
   "source": {
-    "hash": "0xaedf2787fce0415fc5de19b86b4db914ec42e569ab8874db83e134b90b96d143",
-    "language": "ink! 4.0.1",
-    "compiler": "rustc 1.66.0-nightly",
+    "hash": "0x7d93ef5c9e8f765fd00764be5cf9028eb07fb8d5424e37f50772bc1dfc4d5159",
+    "language": "ink! 4.1.0",
+    "compiler": "rustc 1.68.1",
     "build_info": {
       "build_mode": "Debug",
-      "cargo_contract_version": "2.0.2",
-      "rust_toolchain": "nightly-x86_64-apple-darwin",
+      "cargo_contract_version": "2.1.0",
+      "rust_toolchain": "stable-x86_64-apple-darwin",
       "wasm_opt_settings": {
         "keep_debug_symbols": false,
         "optimization_passes": "Z"
@@ -15,10 +15,12 @@
   },
   "contract": {
     "name": "randomoracle",
-    "version": "4.0.1",
+    "version": "4.0.3",
     "authors": [
-      "Parity Technologies <admin@parity.io>"
-    ]
+      "DiaData <nitin.gurbani@diadata.org>"
+    ],
+    "description": "A Rust package for implementing a random oracle by DiaData.",
+    "license": "MIT OR Apache-2.0"
   },
   "spec": {
     "constructors": [
@@ -32,7 +34,7 @@
             "ink_primitives",
             "ConstructorResult"
           ],
-          "type": 1
+          "type": 4
         },
         "selector": "0x9bae9d5e"
       }
@@ -44,7 +46,7 @@
         "ink",
         "LangError"
       ],
-      "type": 3
+      "type": 6
     },
     "messages": [
       {
@@ -53,7 +55,7 @@
             "label": "round",
             "type": {
               "displayName": [
-                "String"
+                "Vec"
               ],
               "type": 0
             }
@@ -62,7 +64,7 @@
             "label": "randomness",
             "type": {
               "displayName": [
-                "String"
+                "Vec"
               ],
               "type": 0
             }
@@ -71,7 +73,7 @@
             "label": "signature",
             "type": {
               "displayName": [
-                "String"
+                "Vec"
               ],
               "type": 0
             }
@@ -80,7 +82,7 @@
             "label": "previous_signature",
             "type": {
               "displayName": [
-                "String"
+                "Vec"
               ],
               "type": 0
             }
@@ -95,7 +97,7 @@
             "ink",
             "MessageResult"
           ],
-          "type": 1
+          "type": 4
         },
         "selector": "0xb49268c0"
       },
@@ -105,32 +107,7 @@
             "label": "round",
             "type": {
               "displayName": [
-                "String"
-              ],
-              "type": 0
-            }
-          }
-        ],
-        "docs": [],
-        "label": "get_random_value_for_round",
-        "mutates": false,
-        "payable": false,
-        "returnType": {
-          "displayName": [
-            "ink",
-            "MessageResult"
-          ],
-          "type": 4
-        },
-        "selector": "0xf6b0b955"
-      },
-      {
-        "args": [
-          {
-            "label": "round",
-            "type": {
-              "displayName": [
-                "String"
+                "Vec"
               ],
               "type": 0
             }
@@ -145,9 +122,49 @@
             "ink",
             "MessageResult"
           ],
-          "type": 5
+          "type": 7
         },
         "selector": "0xacf2b0d7"
+      },
+      {
+        "args": [
+          {
+            "label": "round",
+            "type": {
+              "displayName": [
+                "Vec"
+              ],
+              "type": 0
+            }
+          }
+        ],
+        "docs": [],
+        "label": "get_random_value_for_round",
+        "mutates": false,
+        "payable": false,
+        "returnType": {
+          "displayName": [
+            "ink",
+            "MessageResult"
+          ],
+          "type": 10
+        },
+        "selector": "0xf6b0b955"
+      },
+      {
+        "args": [],
+        "docs": [],
+        "label": "get_last_round",
+        "mutates": false,
+        "payable": false,
+        "returnType": {
+          "displayName": [
+            "ink",
+            "MessageResult"
+          ],
+          "type": 12
+        },
+        "selector": "0x5a20a2c1"
       }
     ]
   },
@@ -190,13 +207,31 @@
                           "name": "previous_signature"
                         }
                       ],
-                      "name": "Randomdata"
+                      "name": "RandomData"
                     }
                   },
                   "root_key": "0xd4d73b97"
                 }
               },
               "name": "value"
+            },
+            {
+              "layout": {
+                "leaf": {
+                  "key": "0x00000000",
+                  "ty": 2
+                }
+              },
+              "name": "owner"
+            },
+            {
+              "layout": {
+                "leaf": {
+                  "key": "0x00000000",
+                  "ty": 0
+                }
+              },
+              "name": "last_round"
             }
           ],
           "name": "RandomOracle"
@@ -210,7 +245,9 @@
       "id": 0,
       "type": {
         "def": {
-          "primitive": "str"
+          "sequence": {
+            "type": 1
+          }
         }
       }
     },
@@ -218,12 +255,51 @@
       "id": 1,
       "type": {
         "def": {
+          "primitive": "u8"
+        }
+      }
+    },
+    {
+      "id": 2,
+      "type": {
+        "def": {
+          "composite": {
+            "fields": [
+              {
+                "type": 3,
+                "typeName": "[u8; 32]"
+              }
+            ]
+          }
+        },
+        "path": [
+          "ink_primitives",
+          "types",
+          "AccountId"
+        ]
+      }
+    },
+    {
+      "id": 3,
+      "type": {
+        "def": {
+          "array": {
+            "len": 32,
+            "type": 1
+          }
+        }
+      }
+    },
+    {
+      "id": 4,
+      "type": {
+        "def": {
           "variant": {
             "variants": [
               {
                 "fields": [
                   {
-                    "type": 2
+                    "type": 5
                   }
                 ],
                 "index": 0,
@@ -232,7 +308,7 @@
               {
                 "fields": [
                   {
-                    "type": 3
+                    "type": 6
                   }
                 ],
                 "index": 1,
@@ -244,11 +320,11 @@
         "params": [
           {
             "name": "T",
-            "type": 2
+            "type": 5
           },
           {
             "name": "E",
-            "type": 3
+            "type": 6
           }
         ],
         "path": [
@@ -257,7 +333,7 @@
       }
     },
     {
-      "id": 2,
+      "id": 5,
       "type": {
         "def": {
           "tuple": []
@@ -265,7 +341,7 @@
       }
     },
     {
-      "id": 3,
+      "id": 6,
       "type": {
         "def": {
           "variant": {
@@ -284,7 +360,187 @@
       }
     },
     {
-      "id": 4,
+      "id": 7,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "fields": [
+                  {
+                    "type": 8
+                  }
+                ],
+                "index": 0,
+                "name": "Ok"
+              },
+              {
+                "fields": [
+                  {
+                    "type": 6
+                  }
+                ],
+                "index": 1,
+                "name": "Err"
+              }
+            ]
+          }
+        },
+        "params": [
+          {
+            "name": "T",
+            "type": 8
+          },
+          {
+            "name": "E",
+            "type": 6
+          }
+        ],
+        "path": [
+          "Result"
+        ]
+      }
+    },
+    {
+      "id": 8,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "index": 0,
+                "name": "None"
+              },
+              {
+                "fields": [
+                  {
+                    "type": 9
+                  }
+                ],
+                "index": 1,
+                "name": "Some"
+              }
+            ]
+          }
+        },
+        "params": [
+          {
+            "name": "T",
+            "type": 9
+          }
+        ],
+        "path": [
+          "Option"
+        ]
+      }
+    },
+    {
+      "id": 9,
+      "type": {
+        "def": {
+          "composite": {
+            "fields": [
+              {
+                "name": "randomness",
+                "type": 0,
+                "typeName": "Vec<u8>"
+              },
+              {
+                "name": "signature",
+                "type": 0,
+                "typeName": "Vec<u8>"
+              },
+              {
+                "name": "previous_signature",
+                "type": 0,
+                "typeName": "Vec<u8>"
+              }
+            ]
+          }
+        },
+        "path": [
+          "randomoracle",
+          "RandomData"
+        ]
+      }
+    },
+    {
+      "id": 10,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "fields": [
+                  {
+                    "type": 11
+                  }
+                ],
+                "index": 0,
+                "name": "Ok"
+              },
+              {
+                "fields": [
+                  {
+                    "type": 6
+                  }
+                ],
+                "index": 1,
+                "name": "Err"
+              }
+            ]
+          }
+        },
+        "params": [
+          {
+            "name": "T",
+            "type": 11
+          },
+          {
+            "name": "E",
+            "type": 6
+          }
+        ],
+        "path": [
+          "Result"
+        ]
+      }
+    },
+    {
+      "id": 11,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "index": 0,
+                "name": "None"
+              },
+              {
+                "fields": [
+                  {
+                    "type": 0
+                  }
+                ],
+                "index": 1,
+                "name": "Some"
+              }
+            ]
+          }
+        },
+        "params": [
+          {
+            "name": "T",
+            "type": 0
+          }
+        ],
+        "path": [
+          "Option"
+        ]
+      }
+    },
+    {
+      "id": 12,
       "type": {
         "def": {
           "variant": {
@@ -301,7 +557,7 @@
               {
                 "fields": [
                   {
-                    "type": 3
+                    "type": 6
                   }
                 ],
                 "index": 1,
@@ -317,83 +573,11 @@
           },
           {
             "name": "E",
-            "type": 3
-          }
-        ],
-        "path": [
-          "Result"
-        ]
-      }
-    },
-    {
-      "id": 5,
-      "type": {
-        "def": {
-          "variant": {
-            "variants": [
-              {
-                "fields": [
-                  {
-                    "type": 6
-                  }
-                ],
-                "index": 0,
-                "name": "Ok"
-              },
-              {
-                "fields": [
-                  {
-                    "type": 3
-                  }
-                ],
-                "index": 1,
-                "name": "Err"
-              }
-            ]
-          }
-        },
-        "params": [
-          {
-            "name": "T",
             "type": 6
-          },
-          {
-            "name": "E",
-            "type": 3
           }
         ],
         "path": [
           "Result"
-        ]
-      }
-    },
-    {
-      "id": 6,
-      "type": {
-        "def": {
-          "composite": {
-            "fields": [
-              {
-                "name": "randomness",
-                "type": 0,
-                "typeName": "String"
-              },
-              {
-                "name": "signature",
-                "type": 0,
-                "typeName": "String"
-              },
-              {
-                "name": "previous_signature",
-                "type": 0,
-                "typeName": "String"
-              }
-            ]
-          }
-        },
-        "path": [
-          "randomoracle",
-          "Randomdata"
         ]
       }
     }
