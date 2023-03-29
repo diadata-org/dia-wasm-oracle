@@ -16,7 +16,7 @@ mod my_contract {
 
     impl MyContract {
         #[ink(constructor)]
-        pub fn new(init_value: bool, random_oracle: AccountId) -> Self {
+        pub fn new(random_oracle: AccountId) -> Self {
             Self {
                 value: init_value,
                 random_oracle: RandomOracleRef::from_account_id(random_oracle),
