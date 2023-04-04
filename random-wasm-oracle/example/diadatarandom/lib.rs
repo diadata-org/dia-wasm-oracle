@@ -84,6 +84,15 @@ pub mod randomoracle {
         pub fn get_last_round(&self) -> Vec<u8> {
             return self.last_round.clone();
         }
+
+        #[ink(message)]
+        pub fn get_last_random_value(&self) -> Option<Vec<u8>> {
+            if let Some(random_data) = self.value.get(self.get_last_round()) {
+                Some(random_data.randomness.clone())
+            } else {
+                None
+            }
+        }
     }
     #[cfg(test)]
     mod tests {
@@ -107,10 +116,11 @@ pub mod randomoracle {
 
             assert_eq!(
                 contract.get_random_value_for_round(round.clone()),
-                randomness
+                Some(randomness.clone())
             );
             contract.get_round(round_invalid.clone());
             assert_eq!(contract.get_last_round(), round);
+            assert_eq!(contract.get_last_random_value(), Some(randomness));
         }
     }
 }
